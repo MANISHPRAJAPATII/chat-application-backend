@@ -2,6 +2,7 @@ import express, {Request, Response, NextFunction, RequestHandler} from "express"
 import dotenv from "dotenv";
 import {pool} from "./db";
 import {firestore, FieldValue, Timestamp} from "./firebase";
+import { QueryDocumentSnapshot } from "firebase-admin/firestore";
 type TS = InstanceType<typeof Timestamp>
 dotenv.config();
 
@@ -126,17 +127,17 @@ app.get(
         const snap = await messagesRef(chatId).orderBy("createdAT", "desc").limit(limit).get();
 
         const messages = snap.docs
-        .map((d) => {
+        .map((d: QueryDocumentSnapshot) => {
             const data = d.data();
             const readBy: Record<string, string> = {};
             for (const [uid, ts] of Object.entries(data.readBy ?? {})) {
-                readBy[uid] = (ts as TS).toDate().toISOStrin();
+                readBy[uid] = (ts as TS).toDate().toISOString();
             }
             return {
                 id: d.id,
                 senderId: data.senderId as number,
                  text: data.text as string,
-                 createdAt: data.createdAt ? (data.createdAt as TS).toDate().toISOStrin() : null,
+                 createdAt: data.createdAt ? (data.createdAt as TS).toDate().toISOString() : null,
                  readBy,
             }
         })
@@ -151,7 +152,7 @@ app.post(
     wrap(async(req, res) => {
         const chatId = toId(req.params.chatId, "chatId")
          const userId = toId(req.body.userId, "userId")
-          const messageId = toId(req.params.messageId, "messageId");
+          const messageId = toText(req.params.messageId, "messageId");
 
           const chat = await getChatOrFail(chatId);
           assertMember(chat, userId);

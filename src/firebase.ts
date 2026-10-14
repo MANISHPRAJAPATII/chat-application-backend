@@ -1,9 +1,11 @@
-import admin from "firebase-admin";
-import dotenv from "dotenv";
+import {initializeApp, applicationDefault} from "firebase-admin/app";
+import {getFirestore, FieldValue, Timestamp} from "firebase-admin/firestore";
+import * as dotenv from "dotenv";
 dotenv.config()
+initializeApp({credential: applicationDefault()})
 
-admin.initializeApp({credential: admin.credential.applicaionDefault()})
+export const firestore = getFirestore();
+export {FieldValue, Timestamp}
 
-export const firestore = admin.firestore()
-export const FieldValue = admin.firestore.FieldValue;
-export const Timestamp = admin.firestore.Timestamp;
+
+
